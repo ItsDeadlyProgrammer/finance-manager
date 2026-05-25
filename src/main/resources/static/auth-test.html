@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Test</title>
+</head>
+<body>
+
+<h2>Register</h2>
+
+<input id="username" placeholder="email"><br><br>
+<input id="password" placeholder="password"><br><br>
+<input id="fullName" placeholder="full name"><br><br>
+<input id="phone" placeholder="phone"><br><br>
+
+<button onclick="register()">Register</button>
+
+<hr>
+
+<h2>Login</h2>
+
+<input id="loginUsername" placeholder="email"><br><br>
+<input id="loginPassword" placeholder="password"><br><br>
+
+<button onclick="login()">Login</button>
+
+<hr>
+
+<h2>Logout</h2>
+
+<button onclick="logout()">Logout</button>
+
+<hr>
+
+<h3>Output</h3>
+<pre id="output"></pre>
+
+<script>
+
+function show(data) {
+    document.getElementById("output").innerText =
+        typeof data === "string" ? data : JSON.stringify(data, null, 2);
+}
+
+async function register() {
+    const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value,
+            fullName: document.getElementById("fullName").value,
+            phoneNumber: document.getElementById("phone").value
+        })
+    });
+
+    const data = await res.text();
+    show(data);
+}
+
+async function login() {
+    const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username: document.getElementById("loginUsername").value,
+            password: document.getElementById("loginPassword").value
+        })
+    });
+
+    const data = await res.text();
+    show(data);
+}
+
+async function logout() {
+    const res = await fetch("/api/auth/logout", {
+        method: "POST"
+    });
+
+    const data = await res.text();
+    show(data);
+}
+
+</script>
+
+</body>
+</html>

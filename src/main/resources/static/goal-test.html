@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Goals API Tester</title>
+</head>
+<body>
+
+<h2>Savings Goals Tester</h2>
+
+<hr>
+
+<h3>Create Goal</h3>
+
+<input id="goalName" placeholder="Goal Name"><br><br>
+<input id="targetAmount" placeholder="Target Amount"><br><br>
+<input id="targetDate" placeholder="YYYY-MM-DD"><br><br>
+
+<button onclick="createGoal()">POST /api/goals</button>
+
+<hr>
+
+<h3>Get All Goals</h3>
+<button onclick="getGoals()">GET /api/goals</button>
+
+<hr>
+
+<h3>Get Goal by ID</h3>
+<input id="goalId" placeholder="Goal ID">
+<button onclick="getGoalById()">GET /api/goals/{id}</button>
+
+<hr>
+
+<h3>Update Goal</h3>
+
+<input id="updateId" placeholder="Goal ID"><br><br>
+<input id="newName" placeholder="New Name"><br><br>
+<input id="newAmount" placeholder="New Target Amount"><br><br>
+<input id="newDate" placeholder="New Target Date"><br><br>
+
+<button onclick="updateGoal()">PUT /api/goals/{id}</button>
+
+<hr>
+
+<h3>Delete Goal</h3>
+
+<input id="deleteId" placeholder="Goal ID">
+<button onclick="deleteGoal()">DELETE /api/goals/{id}</button>
+
+<hr>
+
+<pre id="output"></pre>
+
+<script>
+
+async function createGoal() {
+
+    const res = await fetch("/api/goals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+            goalName: document.getElementById("goalName").value,
+            targetAmount: parseFloat(document.getElementById("targetAmount").value),
+            targetDate: document.getElementById("targetDate").value
+        })
+    });
+
+    const data = await res.json();
+    document.getElementById("output").innerText =
+        JSON.stringify(data, null, 2);
+}
+
+async function getGoals() {
+
+    const res = await fetch("/api/goals", {
+        credentials: "include"
+    });
+
+    const data = await res.json();
+    document.getElementById("output").innerText =
+        JSON.stringify(data, null, 2);
+}
+
+async function getGoalById() {
+
+    const id = document.getElementById("goalId").value;
+
+    const res = await fetch("/api/goals/" + id, {
+        credentials: "include"
+    });
+
+    const data = await res.json();
+    document.getElementById("output").innerText =
+        JSON.stringify(data, null, 2);
+}
+
+async function updateGoal() {
+
+    const id = document.getElementById("updateId").value;
+
+    const res = await fetch("/api/goals/" + id, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+            goalName: document.getElementById("newName").value,
+            targetAmount: parseFloat(document.getElementById("newAmount").value),
+            targetDate: document.getElementById("newDate").value
+        })
+    });
+
+    const data = await res.json();
+    document.getElementById("output").innerText =
+        JSON.stringify(data, null, 2);
+}
+
+async function deleteGoal() {
+
+    const id = document.getElementById("deleteId").value;
+
+    const res = await fetch("/api/goals/" + id, {
+        method: "DELETE",
+        credentials: "include"
+    });
+
+    const data = await res.text();
+    document.getElementById("output").innerText = data;
+}
+
+</script>
+
+</body>
+</html>

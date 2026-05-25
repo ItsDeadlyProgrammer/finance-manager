@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Transaction API Test</title>
+</head>
+<body>
+
+<h2>Transaction API Tester</h2>
+
+<hr>
+
+<h3>Add Transaction</h3>
+
+<input id="amount" placeholder="Amount"><br><br>
+<input id="category" placeholder="Category"><br><br>
+<input id="description" placeholder="Description"><br><br>
+<input id="type" placeholder="INCOME / EXPENSE"><br><br>
+
+<button onclick="addTransaction()">POST /api/transactions</button>
+
+<hr>
+
+<h3>Get Transactions</h3>
+
+<button onclick="getTransactions()">GET /api/transactions</button>
+
+<hr>
+
+<h3>Update Transaction</h3>
+
+<input id="updateId" placeholder="Transaction ID"><br><br>
+<input id="updateAmount" placeholder="New Amount"><br><br>
+<input id="updateCategory" placeholder="New Category"><br><br>
+<input id="updateDescription" placeholder="New Description"><br><br>
+<input id="updateType" placeholder="New Type"><br><br>
+
+<button onclick="updateTransaction()">PUT /api/transactions/{id}</button>
+
+<hr>
+
+<h3>Delete Transaction</h3>
+
+<input id="deleteId" placeholder="Transaction ID">
+<button onclick="deleteTransaction()">DELETE</button>
+
+<hr>
+
+<pre id="output"></pre>
+
+<script>
+
+async function addTransaction() {
+
+    const res = await fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+            amount: Number(document.getElementById("amount").value),
+            category: document.getElementById("category").value,
+            description: document.getElementById("description").value,
+            type: document.getElementById("type").value
+        })
+    });
+
+    const data = await res.json();
+
+    document.getElementById("output").innerText =
+        "POST RESPONSE:\n" + JSON.stringify(data, null, 2);
+}
+
+async function getTransactions() {
+
+    const res = await fetch("/api/transactions", {
+        credentials: "include"
+    });
+
+    const data = await res.json();
+
+    document.getElementById("output").innerText =
+        "GET RESPONSE:\n" + JSON.stringify(data, null, 2);
+}
+
+async function updateTransaction() {
+
+    const id = document.getElementById("updateId").value;
+
+    const res = await fetch("/api/transactions/" + id, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+            amount: document.getElementById("updateAmount").value
+                ? Number(document.getElementById("updateAmount").value)
+                : null,
+
+            category: document.getElementById("updateCategory").value || null,
+            description: document.getElementById("updateDescription").value || null,
+            type: document.getElementById("updateType").value || null
+        })
+    });
+
+    const data = await res.json();
+
+    document.getElementById("output").innerText =
+        "PUT RESPONSE:\n" + JSON.stringify(data, null, 2);
+}
+
+async function deleteTransaction() {
+
+    const id = document.getElementById("deleteId").value;
+
+    const res = await fetch("/api/transactions/" + id, {
+        method: "DELETE",
+        credentials: "include"
+    });
+
+    const data = await res.text();
+
+    document.getElementById("output").innerText =
+        "DELETE RESPONSE:\n" + data;
+}
+
+</script>
+
+</body>
+</html>

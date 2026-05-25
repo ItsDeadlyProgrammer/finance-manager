@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Transaction Manager</title>
+</head>
+<body>
+
+<h2>Add Transaction</h2>
+
+<input id="amount" placeholder="Amount"><br><br>
+<input id="category" placeholder="Category"><br><br>
+<input id="description" placeholder="Description"><br><br>
+<input id="type" placeholder="INCOME / EXPENSE"><br><br>
+
+<button onclick="addTransaction()">Add</button>
+
+<h2>Transactions</h2>
+
+<button onclick="loadTransactions()">Refresh</button>
+
+<div id="output"></div>
+
+<p id="msg"></p>
+
+<script>
+
+async function addTransaction() {
+
+    const res = await fetch("/api/transactions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify({
+            amount: Number(document.getElementById("amount").value),
+            category: document.getElementById("category").value,
+            description: document.getElementById("description").value,
+            type: document.getElementById("type").value
+        })
+    });
+
+    const data = await res.json();
+    document.getElementById("msg").innerText = JSON.stringify(data);
+
+    loadTransactions();
+}
+
+async function loadTransactions() {
+
+    const res = await fetch("/api/transactions", {
+        method: "GET",
+        credentials: "include"
+    });
+
+    if (!res.ok) {
+        document.getElementById("msg").innerText = "Error: " + res.status;
+        return;
+    }
+
+    const data = await res.json();
+
+    let html = "";
+
+    data.forEach(t => {
+        html += `
+            <div style="border:1px solid black; padding:10px; margin:10px;">
+                <b>${t.amount}</b><br>
+                ${t.category}<br>
+                ${t.description}<br>
+                ${t.type}<br>
+
+                <button onclick="deleteTransaction(${t.id})">Delete</button>
+                <button onclick="updateTransaction(${t.id})">Update</button>
+            </div>
+        `;
+    });
+
+    document.getElementById("output").innerHTML = html;
+}
+
+async function deleteTransaction(id) {
+
+    await fetch("/api/transactions/" + id, {
+        method: "DELETE",
+        credentials: "include"
+    });
+
+    loadTransactions();
+}
+
+async function updateTransaction(id) {
+
+    const newAmount = prompt("New amount:");
+    const newDesc = prompt("New description:");
+    const newCategory = prompt("New category:");
+    const newType = prompt("New type:");
+
+    await fetch("/api/transactions/" + id, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify({
+            amount: newAmount ? Number(newAmount) : null,
+            description: newDesc || null,
+            category: newCategory || null,
+            type: newType || null
+        })
+    });
+
+    loadTransactions();
+}
+
+loadTransactions();
+
+</script>
+
+</body>
+</html>

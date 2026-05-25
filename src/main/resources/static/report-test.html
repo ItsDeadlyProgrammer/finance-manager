@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reports Tester</title>
+</head>
+<body>
+
+<h2>Finance Reports</h2>
+
+<hr>
+
+<h3>Monthly Report</h3>
+
+<input id="year" placeholder="Year">
+<input id="month" placeholder="Month (1-12)">
+<button onclick="monthly()">GET Monthly</button>
+
+<hr>
+
+<h3>Yearly Report</h3>
+
+<input id="yyear" placeholder="Year">
+<button onclick="yearly()">GET Yearly</button>
+
+<hr>
+
+<pre id="output"></pre>
+
+<script>
+
+async function monthly() {
+
+    const year = document.getElementById("year").value;
+    const month = document.getElementById("month").value;
+
+    const res = await fetch(`/api/reports/monthly/${year}/${month}`, {
+        credentials: "include"
+    });
+
+    const data = await res.json();
+    document.getElementById("output").innerText =
+        JSON.stringify(data, null, 2);
+}
+
+async function yearly() {
+
+    const year = document.getElementById("yyear").value;
+
+    const res = await fetch(`/api/reports/yearly/${year}`, {
+        credentials: "include"
+    });
+
+    const data = await res.json();
+    document.getElementById("output").innerText =
+        JSON.stringify(data, null, 2);
+}
+
+</script>
+
+</body>
+</html>

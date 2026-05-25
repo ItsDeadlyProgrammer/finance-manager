@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Category API Test</title>
+</head>
+<body>
+
+<h2>Category Tester</h2>
+
+<hr>
+
+<h3>Add Category</h3>
+
+<input id="name" placeholder="Category Name"><br><br>
+<input id="type" placeholder="INCOME / EXPENSE"><br><br>
+
+<button onclick="addCategory()">POST</button>
+
+<hr>
+
+<h3>Get Categories</h3>
+<button onclick="getCategories()">GET</button>
+
+<hr>
+
+<h3>Delete Category</h3>
+<input id="deleteId" placeholder="Category ID">
+<button onclick="deleteCategory()">DELETE</button>
+
+<hr>
+
+<pre id="output"></pre>
+
+<script>
+
+async function addCategory() {
+
+    const res = await fetch("/api/categories", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        credentials: "include",
+        body: JSON.stringify({
+            name: document.getElementById("name").value,
+            type: document.getElementById("type").value
+        })
+    });
+
+    const data = await res.json();
+    document.getElementById("output").innerText =
+        JSON.stringify(data, null, 2);
+}
+
+async function getCategories() {
+
+    const res = await fetch("/api/categories", {
+        credentials: "include"
+    });
+
+    const data = await res.json();
+    document.getElementById("output").innerText =
+        JSON.stringify(data, null, 2);
+}
+
+async function deleteCategory() {
+
+    const id = document.getElementById("deleteId").value;
+
+    const res = await fetch("/api/categories/" + id, {
+        method: "DELETE",
+        credentials: "include"
+    });
+
+    const data = await res.text();
+    document.getElementById("output").innerText = data;
+}
+
+</script>
+
+</body>
+</html>
