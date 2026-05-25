@@ -297,5 +297,5 @@ All source code, API endpoints, frontend pages, and screenshots are included in 
 
 # 👨‍💻 Author
 
-Harsh  
-Personal Finance Manager Assignment
+Harshvardhan Singh 
+
