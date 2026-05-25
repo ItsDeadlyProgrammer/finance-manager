@@ -51,3 +51,8 @@ tasks.withType<Test> {
 tasks.jar {
     enabled = true
 }
+
+
+tasks.bootJar {
+    archiveFileName.set("app.jar")
+}
