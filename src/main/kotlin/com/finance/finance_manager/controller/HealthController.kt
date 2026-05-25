@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController
 class HealthController {
 
     @GetMapping("/health")
-    fun health(): String {
-        return "Finance Manager API Running"
+    fun health(): Map<String, String> {
+        return mapOf("status" to "UP")
     }
 }
