@@ -6,7 +6,7 @@ data class TransactionRequest(
 
     val category: String,
 
-    val description: String = "",
+    val description: String? = null,
 
     val type: String = "EXPENSE"
 )

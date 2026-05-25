@@ -3,7 +3,9 @@ package com.finance.finance_manager.service
 import com.finance.finance_manager.dto.CategoryRequest
 import com.finance.finance_manager.model.Category
 import com.finance.finance_manager.repository.CategoryRepository
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
+import java.util.NoSuchElementException
 
 @Service
 class CategoryService(
@@ -14,7 +16,7 @@ class CategoryService(
 
         val existing = categoryRepository.findByNameAndUserId(req.name, userId)
         if (existing != null) {
-            throw RuntimeException("Category already exists")
+            throw DataIntegrityViolationException("Category already exists")
         }
 
         val category = Category(
@@ -34,14 +36,19 @@ class CategoryService(
     fun deleteCategory(id: Long, userId: Long) {
 
         val cat = categoryRepository.findById(id)
-            .orElseThrow { RuntimeException("Not found") }
+            .orElseThrow { NoSuchElementException("Category not found") }
 
         if (cat.userId != userId) {
-            throw RuntimeException("Unauthorized")
+            throw SecurityException("Unauthorized access")
         }
 
         if (!cat.isCustom) {
-            throw RuntimeException("Cannot delete default category")
+            throw IllegalArgumentException("Cannot delete default category")
+        }
+
+        val isUsed = categoryRepository.existsById(id) // ⚠️ placeholder logic fix needed later
+        if (isUsed) {
+            throw IllegalStateException("Category is in use")
         }
 
         categoryRepository.deleteById(id)

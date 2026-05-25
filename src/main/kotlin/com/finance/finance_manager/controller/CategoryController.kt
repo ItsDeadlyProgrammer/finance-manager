@@ -12,20 +12,25 @@ class CategoryController(
     private val categoryService: CategoryService
 ) {
 
+    private fun getUserId(session: HttpSession): Long {
+        return session.getAttribute("userId") as? Long
+            ?: throw SecurityException("User not authenticated")
+    }
+
     @PostMapping
     fun addCategory(
         @RequestBody req: CategoryRequest,
         session: HttpSession
     ): Category {
 
-        val userId = session.getAttribute("userId") as Long
+        val userId = getUserId(session)
         return categoryService.addCategory(req, userId)
     }
 
     @GetMapping
     fun getCategories(session: HttpSession): List<Category> {
 
-        val userId = session.getAttribute("userId") as Long
+        val userId = getUserId(session)
         return categoryService.getCategories(userId)
     }
 
@@ -35,7 +40,7 @@ class CategoryController(
         session: HttpSession
     ) {
 
-        val userId = session.getAttribute("userId") as Long
+        val userId = getUserId(session)
         categoryService.deleteCategory(id, userId)
     }
 }

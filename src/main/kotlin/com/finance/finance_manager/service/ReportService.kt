@@ -2,9 +2,9 @@ package com.finance.finance_manager.service
 
 import com.finance.finance_manager.dto.MonthlyReportResponse
 import com.finance.finance_manager.dto.YearlyReportResponse
+import com.finance.finance_manager.model.Transaction
 import com.finance.finance_manager.repository.TransactionRepository
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 
 @Service
 class ReportService(
@@ -13,21 +13,15 @@ class ReportService(
 
     fun monthlyReport(year: Int, month: Int, userId: Long): MonthlyReportResponse {
 
-        val transactions = transactionRepository.findAll()
-            .filter { it.userId == userId }
-            .filter {
-                it.date.year == year && it.date.monthValue == month
-            }
+        val transactions = getFilteredTransactions(year, month, userId)
 
-        val income = transactions
-            .filter { it.type == "INCOME" }
-            .groupBy { it.category }
-            .mapValues { it.value.sumOf { t -> t.amount } }
+        val income = groupByCategory(
+            transactions.filter { it.type == "INCOME" }
+        )
 
-        val expense = transactions
-            .filter { it.type == "EXPENSE" }
-            .groupBy { it.category }
-            .mapValues { it.value.sumOf { t -> t.amount } }
+        val expense = groupByCategory(
+            transactions.filter { it.type == "EXPENSE" }
+        )
 
         val totalIncome = income.values.sum()
         val totalExpense = expense.values.sum()
@@ -47,15 +41,13 @@ class ReportService(
             .filter { it.userId == userId }
             .filter { it.date.year == year }
 
-        val income = transactions
-            .filter { it.type == "INCOME" }
-            .groupBy { it.category }
-            .mapValues { it.value.sumOf { t -> t.amount } }
+        val income = groupByCategory(
+            transactions.filter { it.type == "INCOME" }
+        )
 
-        val expense = transactions
-            .filter { it.type == "EXPENSE" }
-            .groupBy { it.category }
-            .mapValues { it.value.sumOf { t -> t.amount } }
+        val expense = groupByCategory(
+            transactions.filter { it.type == "EXPENSE" }
+        )
 
         val totalIncome = income.values.sum()
         val totalExpense = expense.values.sum()
@@ -66,5 +58,25 @@ class ReportService(
             totalExpenses = expense,
             netSavings = totalIncome - totalExpense
         )
+    }
+
+    private fun getFilteredTransactions(
+        year: Int,
+        month: Int,
+        userId: Long
+    ): List<Transaction> {
+        return transactionRepository.findAll()
+            .filter { it.userId == userId }
+            .filter { it.date.year == year && it.date.monthValue == month }
+    }
+
+    private fun groupByCategory(
+        transactions: List<Transaction>
+    ): Map<String, Double> {
+        return transactions
+            .groupBy { it.category }
+            .mapValues { entry ->
+                entry.value.sumOf { it.amount }
+            }
     }
 }

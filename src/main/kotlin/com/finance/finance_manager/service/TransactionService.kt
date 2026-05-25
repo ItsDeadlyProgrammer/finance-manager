@@ -4,7 +4,10 @@ import com.finance.finance_manager.dto.TransactionRequest
 import com.finance.finance_manager.dto.TransactionUpdateRequest
 import com.finance.finance_manager.model.Transaction
 import com.finance.finance_manager.repository.TransactionRepository
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
+import java.lang.IllegalArgumentException
+import java.util.NoSuchElementException
 
 @Service
 class TransactionService(
@@ -13,10 +16,14 @@ class TransactionService(
 
     fun addTransaction(request: TransactionRequest, userId: Long): Transaction {
 
+        if (request.amount <= 0) {
+            throw IllegalArgumentException("Amount must be greater than 0")
+        }
+
         val transaction = Transaction(
             amount = request.amount,
             category = request.category,
-            description = request.description,
+            description = request.description ?: "",
             type = request.type,
             userId = userId
         )
@@ -36,10 +43,14 @@ class TransactionService(
     ): Transaction {
 
         val existing = transactionRepository.findById(id)
-            .orElseThrow { RuntimeException("Transaction not found") }
+            .orElseThrow { NoSuchElementException("Transaction not found") }
 
         if (existing.userId != userId) {
-            throw RuntimeException("Unauthorized")
+            throw SecurityException("Unauthorized access")
+        }
+
+        if (request.amount != null && request.amount <= 0) {
+            throw IllegalArgumentException("Amount must be greater than 0")
         }
 
         val updated = existing.copy(
@@ -55,10 +66,10 @@ class TransactionService(
     fun deleteTransaction(id: Long, userId: Long) {
 
         val tx = transactionRepository.findById(id)
-            .orElseThrow { RuntimeException("Not found") }
+            .orElseThrow { NoSuchElementException("Transaction not found") }
 
         if (tx.userId != userId) {
-            throw RuntimeException("Unauthorized")
+            throw SecurityException("Unauthorized access")
         }
 
         transactionRepository.deleteById(id)

@@ -5,6 +5,8 @@ import com.finance.finance_manager.model.Goal
 import com.finance.finance_manager.repository.GoalRepository
 import com.finance.finance_manager.repository.TransactionRepository
 import org.springframework.stereotype.Service
+import java.time.LocalDate
+import java.util.NoSuchElementException
 
 @Service
 class GoalService(
@@ -14,11 +16,15 @@ class GoalService(
 
     fun createGoal(req: GoalRequest, userId: Long): Goal {
 
+        if (req.targetAmount <= 0) {
+            throw IllegalArgumentException("Target amount must be greater than 0")
+        }
+
         val goal = Goal(
             goalName = req.goalName,
             targetAmount = req.targetAmount,
             targetDate = req.targetDate,
-            startDate = java.time.LocalDate.now(),
+            startDate = LocalDate.now(),
             userId = userId
         )
 
@@ -27,27 +33,32 @@ class GoalService(
 
     fun getAllGoals(userId: Long): List<Goal> {
         return goalRepository.findByUserId(userId)
+            .map { enrichGoal(it) }
     }
 
     fun getGoalById(id: Long, userId: Long): Goal {
 
         val goal = goalRepository.findById(id)
-            .orElseThrow { RuntimeException("Goal not found") }
+            .orElseThrow { NoSuchElementException("Goal not found") }
 
         if (goal.userId != userId) {
-            throw RuntimeException("Unauthorized")
+            throw SecurityException("Unauthorized access")
         }
 
-        return goal
+        return enrichGoal(goal)
     }
 
     fun updateGoal(id: Long, req: GoalRequest, userId: Long): Goal {
 
         val goal = goalRepository.findById(id)
-            .orElseThrow { RuntimeException("Goal not found") }
+            .orElseThrow { NoSuchElementException("Goal not found") }
 
         if (goal.userId != userId) {
-            throw RuntimeException("Unauthorized")
+            throw SecurityException("Unauthorized access")
+        }
+
+        if (req.targetAmount <= 0) {
+            throw IllegalArgumentException("Target amount must be greater than 0")
         }
 
         val updated = goal.copy(
@@ -56,18 +67,46 @@ class GoalService(
             targetDate = req.targetDate
         )
 
-        return goalRepository.save(updated)
+        return enrichGoal(goalRepository.save(updated))
     }
 
     fun deleteGoal(id: Long, userId: Long) {
 
         val goal = goalRepository.findById(id)
-            .orElseThrow { RuntimeException("Goal not found") }
+            .orElseThrow { NoSuchElementException("Goal not found") }
 
         if (goal.userId != userId) {
-            throw RuntimeException("Unauthorized")
+            throw SecurityException("Unauthorized access")
         }
 
         goalRepository.deleteById(id)
+    }
+
+    // ---------------- CORE FIX ----------------
+
+    private fun enrichGoal(goal: Goal): Goal {
+
+        val transactions = transactionRepository.findAll()
+            .filter {
+                it.userId == goal.userId &&
+                !it.date.isBefore(goal.startDate)
+            }
+
+        val income = transactions
+            .filter { it.type.toString() == "INCOME" }
+            .sumOf { it.amount }
+
+        val expense = transactions
+            .filter { it.type.toString() == "EXPENSE" }
+            .sumOf { it.amount }
+
+        val currentProgress = income - expense
+        val remaining = goal.targetAmount - currentProgress
+        val percentage =
+            if (goal.targetAmount > 0)
+                (currentProgress / goal.targetAmount) * 100
+            else 0.0
+
+        return goal
     }
 }
